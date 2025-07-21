@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Klipy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: 'Nunito', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #ff4500, #ffd700);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .logo, .nav-btn, .social-icon {
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      transition: transform 0.3s, background-color 0.3s;
+    }
+    .logo {
+      margin-right: 10px;
+      cursor: pointer;
+    }
+    .nav-panel {
+      position: fixed;
+      top: 10px;
+      left: 20%;
+      right: 20%;
+      display: flex;
+      align-items: center;
+      background: linear-gradient(90deg, #b91c1c, #ea580c);
+      padding: 10px 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+    }
+    .nav-buttons {
+      display: flex;
+      margin-left: auto;
+    }
+    .nav-btn {
+      margin: 0 8px;
+      cursor: pointer;
+      background: transparent;
+    }
+    .nav-btn:hover {
+      transform: scale(1.1);
+      background-color: #ffd700;
+    }
+    .tooltip {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      background-color: #ff4500;
+      color: white;
+      text-align: center;
+      border-radius: 3px;
+      padding: 2px 6px;
+      position: absolute;
+      z-index: 1;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 12px;
+    }
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+    .hero {
+      min-height: 60vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      margin-top: 80px;
+    }
+    .gradient-text {
+      background: linear-gradient(90deg, #4c1d95, #7c2d12);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: fadeInText 1.5s ease-in-out;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    }
+    @keyframes fadeInText {
+      0% { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .section {
+      padding: 60px 20px;
+      text-align: center;
+      margin: 300px auto;
+      min-height: 100vh;
+      max-width: 800px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease-in-out;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .section:hover {
+      transform: translateY(-5px);
+    }
+    .section h2, .section p {
+      animation: fadeInText 1.5s ease-in-out;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    }
+    .section h2 {
+      background: linear-gradient(90deg, #4c1d95, #7c2d12);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+    .section p, .section a {
+      color: #ffffff;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+    .section a {
+      color: #ff4500;
+      text-decoration: none;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    }
+    .section a:hover {
+      text-decoration: underline;
+    }
+    .social-icon {
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+    .social-fixed {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 1000;
+    }
+    .social-fixed a {
+      display: flex;
+      align-items: center;
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    }
+    .social-fixed a:hover {
+      text-decoration: underline;
+    }
+    .carousel {
+      width: 100%;
+      overflow: hidden;
+      position: relative;
+      height: 200px;
+      margin: 20px auto;
+      max-width: 600px;
+    }
+    .carousel-track {
+      display: flex;
+      animation: slide 20s infinite linear;
+      width: calc(310px * 10); /* 5 images + 5 duplicates, each 300px + 10px margin */
+    }
+    .carousel img {
+      width: 300px;
+      height: 200px;
+      object-fit: cover;
+      margin-right: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+    }
+    @keyframes slide {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-3100px); } /* 10 images x (300px + 10px margin) = 3100px */
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: linear-gradient(135deg, #b91c1c, #ea580c);
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      max-width: 400px;
+      width: 90%;
+    }
+    .modal-content h3 {
+      color: #ffffff;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    }
+    .modal-content a {
+      display: inline-flex;
+      align-items: center;
+      padding: 10px 20px;
+      margin: 10px;
+      background: #ff4500;
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    }
+    .modal-content a:hover {
+      background: #e03e00;
+    }
+    .modal-content .social-icon {
+      margin-right: 10px;
+    }
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 1.5rem;
+      color: #ffffff;
+      cursor: pointer;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    }
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: linear-gradient(90deg, #b91c1c, #ea580c);
+      box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .footer-btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background: #ff4500;
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+      transition: background 0.3s;
+    }
+    .footer-btn:hover {
+      background: #e03e00;
+    }
+  </style>
+  <script>
+    // File Processing Code
+    const gk = {
+      isXlsx: false,
+      xlsxFileLookup: {},
+      fileData: {}
+    };
+    function filledCell(cell) {
+      return cell !== '' && cell != null;
+    }
+    function loadFileData(filename) {
+      if (gk.isXlsx && gk.xlsxFileLookup[filename]) {
+        try {
+          const workbook = XLSX.read(gk.fileData[filename], { type: 'base64' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+          const filteredData = jsonData.filter(row => row.some(filledCell));
+          const headerRowIndex = filteredData.findIndex((row, index) =>
+            row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+          ) || 0;
+          const csv = XLSX.utils.sheet_to_csv(XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)), { header: 1 });
+          return csv;
+        } catch (e) {
+          console.error(e);
+          return "";
+        }
+      }
+      return gk.fileData[filename] || "";
+    }
+
+    function scrollToSection(sectionId) {
+      document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Modal functionality
+    function openModal(productNumber) {
+      const modal = document.getElementById('contactModal');
+      const telegramLink = document.getElementById('telegramLink');
+      const instagramLink = document.getElementById('instagramLink');
+      telegramLink.href = `https://t.me/supp_klipy?text=Меня%20заинтересовал%20этот%20товар%20(${productNumber})!`;
+      instagramLink.href = `https://ig.me/m/klipy_store?text=Меня%20заинтересовал%20этот%20товар%20(${productNumber})!`;
+      modal.style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('contactModal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('contactModal');
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- Navigation Panel with Logo (1.jpg) -->
+  <div class="nav-panel">
+    <img src="images/1.jpg" class="logo" alt="Klipy Logo" onclick="scrollToSection('hero')">
+    <div class="nav-buttons">
+      <div class="tooltip" onclick="scrollToSection('about')">
+        <img src="images/3.jpg" class="nav-btn" alt="О нас">
+        <span class="tooltiptext">О нас</span>
+      </div>
+      <div class="tooltip" onclick="scrollToSection('products')">
+        <img src="images/5.jpg" class="nav-btn" alt="Товары">
+        <span class="tooltiptext">Товары</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Social Media Fixed Block -->
+  <div class="social-fixed">
+    <a href="https://t.me/klipystore" target="_blank">
+      <img src="images/tg.jpg" class="social-icon" alt="Telegram"> @klipystore
+    </a>
+    <a href="https://t.me/supp_klipy" target="_blank">
+      <img src="images/tg.jpg" class="social-icon" alt="Telegram"> @supp_klipy
+    </a>
+    <a href="https://www.instagram.com/klipy_store" target="_blank">
+      <img src="images/inst.jpg" class="social-icon" alt="Instagram"> @klipy_store
+    </a>
+  </div>
+
+  <!-- Modal for Contact Options -->
+  <div id="contactModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal()">×</span>
+      <h3>Связаться с нами</h3>
+      <a id="telegramLink" href="#" target="_blank">
+        <img src="images/tg.jpg" class="social-icon" alt="Telegram"> Telegram
+      </a>
+      <a id="instagramLink" href="#" target="_blank">
+        <img src="images/inst.jpg" class="social-icon" alt="Instagram"> Instagram
+      </a>
+    </div>
+  </div>
+
+  <!-- Hero Section -->
+  <section id="hero" class="hero">
+    <div>
+      <h1 class="text-5xl font-bold mb-4 gradient-text">Klipy</h1>
+      <p class="text-xl mb-6 gradient-text">Яркие и стильные коврики для вашего ПК!</p>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section id="about" class="section">
+    <h2>О нас</h2>
+    <p>
+      Klipy — это магазин стильных и качественных ковриков для ПК, созданных для геймеров, профессионалов и всех, кто ценит комфорт и эстетику. Наши коврики отличаются ярким дизайном, прочностью и удобством, идеально дополняя ваше рабочее или игровое пространство.
+    </p>
+    <p>
+      Мы предлагаем широкий выбор ковриков — от минималистичных до кастомных дизайнов, чтобы каждый мог найти идеальный вариант. Наша цель — сделать ваш ПК-опыт ярче и удобнее.
+    </p>
+  </section>
+
+  <!-- Products Section -->
+  <section id="products" class="section">
+    <h2>Товары</h2>
+    <div class="carousel">
+      <div class="carousel-track">
+        <img src="images/banner1.jpg" alt="Product 1" onclick="openModal(1)">
+        <img src="images/banner2.jpg" alt="Product 2" onclick="openModal(2)">
+        <img src="images/banner3.jpg" alt="Product 3" onclick="openModal(3)">
+        <img src="images/banner4.jpg" alt="Product 4" onclick="openModal(4)">
+        <img src="images/banner5.jpg" alt="Product 5" onclick="openModal(5)">
+        <img src="images/banner1.jpg" alt="Product 1" onclick="openModal(1)">
+        <img src="images/banner2.jpg" alt="Product 2" onclick="openModal(2)">
+        <img src="images/banner3.jpg" alt="Product 3" onclick="openModal(3)">
+        <img src="images/banner4.jpg" alt="Product 4" onclick="openModal(4)">
+        <img src="images/banner5.jpg" alt="Product 5" onclick="openModal(5)">
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer with User Agreement -->
+  <footer>
+    <a href="KlipyStore_Документы.pdf" target="_blank" class="footer-btn">Пользовательское соглашение</a>
+  </footer>
+</body>
+</html>
